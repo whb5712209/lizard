@@ -25,8 +25,10 @@ router.all('*', before, function (req, res, next) {
                     return;
                 }
                 const { value } = utils.onFormat(result, req.totalParams, req.method)
-                res.requestFile = value
-                res.requestFileType = utils.onSuffix(value)
+                if(value){
+                    res.requestFile = value
+                    res.requestFileType = utils.onSuffix(value)
+                }
                 next()
             });
         } else if (type === 'json' || type === 'js') {

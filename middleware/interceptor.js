@@ -26,7 +26,7 @@ const after = function (req, res, next) {
                 if(typeof model === 'object' || Array.isArray(model)){
                     res.status(200).json(model)
                 }else if(typeof model === 'function'){
-                    res.status(200).json(model())
+                    res.status(200).json(model(req))
                 }else{
                     res.status(200).json(model)
                 }

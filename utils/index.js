@@ -42,7 +42,8 @@ function onFormat(result, params = {},method) {
     return false
   })
   const sortList = Object.keys(config).map(item => item * 1)
-  const maxSort = Math.max.apply(null, sortList)
+  let  maxSort = Math.max.apply(null, sortList) 
+  maxSort = Number.isInteger(maxSort)? maxSort : 0 
   if (maxSort) {
     return config[maxSort]
   }

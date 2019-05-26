@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon   ./bin/www",
-    "devInspect": "nodemon --inspect-brk=9229  --exec ./bin/www"
+    "start": "nodemon   ./bin/www"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
