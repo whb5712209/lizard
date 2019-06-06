@@ -7,7 +7,18 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "nodemon",
+            "name": "node  >= 7.x",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run-script",
+                "startInspect"
+            ],
+            "port": 9229
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "node <=6.x",
             "runtimeExecutable": "${workspaceFolder}/node_modules/nodemon/bin/nodemon.js",
             "args": ["${workspaceRoot}/bin/www"],
             "restart": true,
@@ -18,6 +29,5 @@
             "runtimeArgs": [	
             ]
         }
-      
     ]
 }

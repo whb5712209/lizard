@@ -16,22 +16,22 @@ const before = function (req, res, next) {
 const after = function (req, res, next) {
     if (res.requestFile) {
         try {
-            if(res.requestFileType === 'json'){
+            if (res.requestFileType === 'json') {
                 const data = fs.readFileSync(res.requestFile, {
                     encoding: 'utf8'
                 })
                 res.status(200).send(data)
-            }else{
+            } else {
                 const model = require(path.join(__dirname, '../', res.requestFile))
-                if(typeof model === 'object' || Array.isArray(model)){
+                if (typeof model === 'object' || Array.isArray(model)) {
                     res.status(200).json(model)
-                }else if(typeof model === 'function'){
+                } else if (typeof model === 'function') {
                     res.status(200).json(model(req))
-                }else{
+                } else {
                     res.status(200).json(model)
                 }
             }
-           
+
         } catch (e) {
             res.status(200).send({ message: '找不到任何配置啊......' })
         }

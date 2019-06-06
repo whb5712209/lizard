@@ -1,6 +1,6 @@
 const express = require('express')
 const utils = require('../utils/index')
-const {resourcePath} = require('../config/index')
+const { resourcePath } = require('../config/index')
 const fs = require('fs')
 const glob = require("glob")
 const parseString = require('xml2js').parseString;
@@ -8,7 +8,7 @@ const { before, after } = require('../middleware/interceptor')
 const router = express.Router();
 
 router.all('*', before, function (req, res, next) {
-    const url = `${resourcePath}${req.path}`
+    const url = resourcePath + req.originalUrl.split('?')[0]
     glob(`${url}.*`, {}, (err, files) => {
         if (err || files.length === 0) {
             next()
@@ -25,7 +25,7 @@ router.all('*', before, function (req, res, next) {
                     return;
                 }
                 const { value } = utils.onFormat(result, req.totalParams, req.method)
-                if(value){
+                if (value) {
                     res.requestFile = value
                     res.requestFileType = utils.onSuffix(value)
                 }
