@@ -12,8 +12,10 @@ function onFormat(result, params = {}, method) {
     return false
   })
   const tmp = onDeconstruction(query)
+  console.log('xml 转译为:  ', JSON.stringify(tmp))
   const configs = onSortByTotal(tmp, params).sort((before, after) => (after.__sort__ - before.__sort__));
-  console.log('sort:', configs[0].__sort__)
+  console.log('最高优先级sort:', configs[0].__sort__)
+  console.log('最优配置:', JSON.stringify(configs[0]))
   return {
     value: configs[0].__sort__ >= 0 ? configs[0].__url__ : ''
   }

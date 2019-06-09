@@ -7,11 +7,12 @@ const parseString = require('xml2js').parseString;
 const { before, after } = require('../middleware/interceptor')
 const router = express.Router();
 
-router.all('*', before, function (req, res, next) {
+router.all('*', function (req, res, next) {
+    // throw new Error("我就是异常！！！");
     const url = resourcePath + req.originalUrl.split('?')[0]
     glob(`${url}.*`, {}, (err, files) => {
         if (err || files.length === 0) {
-            next()
+            next(err)
             return;
         }
         const type = utils.onSuffix(files[0])
@@ -21,7 +22,7 @@ router.all('*', before, function (req, res, next) {
             })
             parseString(data, (err, result) => {
                 if (err) {
-                    next()
+                    next(err)
                     return;
                 }
                 const { value } = utils.onFormat(result, req.totalParams, req.method)
@@ -39,5 +40,5 @@ router.all('*', before, function (req, res, next) {
             next()
         }
     })
-}, after)
+})
 module.exports = router

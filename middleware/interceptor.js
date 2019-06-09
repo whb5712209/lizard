@@ -20,25 +20,27 @@ const after = function (req, res, next) {
                 const data = fs.readFileSync(res.requestFile, {
                     encoding: 'utf8'
                 })
-                res.status(200).send(data)
+                next(JSON.parse(data))
             } else {
                 const model = require(path.join(__dirname, '../', res.requestFile))
                 if (typeof model === 'object' || Array.isArray(model)) {
-                    res.status(200).json(model)
+                    next(model)
                 } else if (typeof model === 'function') {
-                    res.status(200).json(model(req))
+                    next(model(req))
                 } else {
-                    res.status(200).json(model)
+                    next(model)
                 }
             }
 
         } catch (e) {
-            res.status(200).send({ message: '找不到任何配置啊......' })
+            next(new Error('找不到任何配置啊'))
         }
     } else {
-        res.status(200).send({ message: '找不到任何配置啊......' })
+        next(new Error('找不到任何配置啊'))
     }
 };
+
+
 module.exports = {
     before,
     after
