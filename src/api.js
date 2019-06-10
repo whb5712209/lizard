@@ -1,6 +1,7 @@
 const express = require('express')
 const utils = require('../utils/index')
-const { resourcePath } = require('../config/index')
+const package = require("../package.json");
+
 const fs = require('fs')
 const glob = require("glob")
 const parseString = require('xml2js').parseString;
@@ -9,7 +10,7 @@ const router = express.Router();
 
 router.all('*', function (req, res, next) {
     // throw new Error("我就是异常！！！");
-    const url = resourcePath + req.originalUrl.split('?')[0]
+    const url = package.resource + req.originalUrl.split('?')[0]
     glob(`${url}.*`, {}, (err, files) => {
         if (err || files.length === 0) {
             next(err)

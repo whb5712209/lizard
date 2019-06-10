@@ -3,9 +3,8 @@ const upload = express() //
 const path = require('path')
 const fs = require('fs')
 const multer = require('multer')
-const { resourcePath } = require('../config/index')
-
-const publicPath = path.join(__dirname, '../', resourcePath)
+const package = require("../package.json");
+const publicPath = path.join(__dirname, '../', package.resource)
 
 const uploadFile = multer({
   dest: `${publicPath}/`

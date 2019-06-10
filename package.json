@@ -18,5 +18,6 @@
   "devDependencies": {
     "body-parser": "^1.19.0",
     "nodemon": "^1.19.0"
-  }
+  },
+  "resource": "data"
 }
