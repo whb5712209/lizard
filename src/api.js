@@ -1,5 +1,5 @@
 const express = require('express')
-const utils = require('../utils/index')
+const { onSuffix, onFilterByMethod, onCalculateSortByParams } = require('../utils/index')
 const package = require("../package.json");
 
 const fs = require('fs')
@@ -16,8 +16,8 @@ router.all('*', function (req, res, next) {
             next(err)
             return;
         }
-        const type = utils.onSuffix(files[0])
-        if (type === 'xml') {
+        const fileTypelist = files.map(item => onSuffix(item));
+        if (fileTypelist.find((item) => (item === 'xml'))) {
             const data = fs.readFileSync(`${url}.xml`, {
                 encoding: 'utf8'
             })
@@ -26,20 +26,29 @@ router.all('*', function (req, res, next) {
                     next(err)
                     return;
                 }
-                const { value } = utils.onFormat(result, req.totalParams, req.method)
+                const query = onFilterByMethod(result.param.query, req.method)
+                const { value } = onCalculateSortByParams(query, req.totalParams)
                 if (value) {
                     res.requestFile = value
-                    res.requestFileType = utils.onSuffix(value)
+                    res.requestFileType = onSuffix(value)
                 }
                 next()
             });
-        } else if (type === 'json' || type === 'js') {
-            res.requestFile = files[0]
-            res.requestFileType = type
-            next()
-        } else {
-            next()
+            return;
         }
+        if (fileTypelist.find((item) => (item === 'js'))) {
+            res.requestFile = `${url}.js`
+            res.requestFileType = 'js'
+            next()
+            return;
+        }
+        if (fileTypelist.find((item) => (item === 'json'))) {
+            res.requestFile = `${url}.json`
+            res.requestFileType = 'json'
+            next()
+            return;
+        }
+        next()
     })
 })
 module.exports = router
