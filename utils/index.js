@@ -1,10 +1,11 @@
 const jsoncheck = require("./jsoncheck");
-function onFormat(result, params = {}, method) {
-  const query = result.param.query.filter(item => {
+
+function onFilterByMethod(query, method) {
+  return query.filter(item => {
     if (!item.$.method) {
       return true
     }
-    if (item.$.method.toLocaleUpperCase() === method) {
+    if (item.$.method.toLocaleUpperCase() === method.toLocaleUpperCase()) {
       return true
     }
     if (item.$.method === '*') {
@@ -12,17 +13,22 @@ function onFormat(result, params = {}, method) {
     }
     return false
   })
+}
+
+function onCalculateSortByParams(query, params) {
   const tmp = onDeconstruction(query)
   console.log('xml 转译为:  ', JSON.stringify(tmp))
-  const configs = onSortByTotal(tmp, params).sort((before, after) => (after.__sort__ - before.__sort__));
+  const configs = onSortByParams(tmp, params).sort((before, after) => (after.__sort__ - before.__sort__));
   console.log('最高优先级sort:', configs[0].__sort__)
   console.log('最优配置:', JSON.stringify(configs[0]))
   return {
     value: configs[0].__sort__ >= 0 ? configs[0].__url__ : ''
   }
 }
-
 function onSuffix(str) {
+  if(/config.json$/.test(str)){
+    return 'config.json';
+  }
   return str.substr(str.lastIndexOf('.') + 1, str.length)
 }
 function jsonCheckFile(configFile,requestParams,method){
@@ -52,12 +58,12 @@ function jsonCheckFile(configFile,requestParams,method){
 }
 module.exports = {
   onSuffix: onSuffix,
-  onFormat: onFormat,
-  onSort: onSortByTotal,
-  jsonCheckFile:jsonCheckFile
+  jsonCheckFile:jsonCheckFile,
+  onFilterByMethod: onFilterByMethod,
+  onCalculateSortByParams: onCalculateSortByParams
 }
 
-function onFormatByJS(source, format = 'String') {
+function onFormat(source, format = 'String') {
   if (format === 'String') {
     return source + ''
   }
@@ -107,15 +113,15 @@ function onDeconstruction(xml, num = 0, config) {
     if (type === 'Array') {
       if (item._ && item.$.name) {
         config.push({
-          [item.$.name]: onFormatByJS(item._, dataType),
+          [item.$.name]: onFormat(item._, dataType),
         })
         return;
       }
-      config.push(onFormatByJS(item._ ? item._ : item, dataType))
+      config.push(onFormat(item._ ? item._ : item, dataType))
       return;
     }
     if (type === 'Object') {
-      config[item.$.name] = onFormatByJS(item._, dataType)
+      config[item.$.name] = onFormat(item._, dataType)
       return;
     }
   })
@@ -131,24 +137,24 @@ function getDataType(value) {
   return str.slice(str.indexOf(' '), str.indexOf(']')).trim()
 }
 
-function onSortByTotal(result, params) {
+function onSortByParams(result, params) {
   return result.map(item => {
-    onSortByItem(item, params)
+    onSortByReference(item, params)
     return item
   })
 }
 
-function onSortByItem(result, params, num = 0) {
+function onSortByReference(result, params, num = 0) {
   const dataType = getDataType(result)
   if (dataType === 'Object') {
-    num = Object.keys(result).reduce(onSort.bind(null, result, params), num)
+    num = Object.keys(result).reduce(onSortByProperty.bind(null, result, params), num)
     if (result.__url__) {
       result['__sort__'] = num
     }
 
   }
   if (dataType === 'Array') {
-    num = result.reduce(onSort.bind(null, result, params), num)
+    num = result.reduce(onSortByProperty.bind(null, result, params), num)
     if (result.__url__) {
       result['__sort__'] = num
     }
@@ -156,7 +162,7 @@ function onSortByItem(result, params, num = 0) {
   return num
 }
 
-function onSort(result, params, before, after, index) {
+function onSortByProperty(result, params, before, after, index) {
   // const resultType = getDataType(result[after])
   const curType = getDataType(after)
   // 配置类型
@@ -210,11 +216,11 @@ function onSort(result, params, before, after, index) {
       })
       return before
     } else {
-      return onSortByItem(curResult, curParams, before)
+      return onSortByReference(curResult, curParams, before)
     }
   }
   if (paramsType === 'Object') {
-    return onSortByItem(curResult, curParams, before)
+    return onSortByReference(curResult, curParams, before)
   }
   if (curParams === curResult) {
     before += 2

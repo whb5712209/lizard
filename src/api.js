@@ -1,5 +1,5 @@
 const express = require('express')
-const utils = require('../utils/index')
+const { onSuffix, onFilterByMethod, onCalculateSortByParams,jsonCheckFile } = require('../utils/index')
 const package = require("../package.json");
 
 const fs = require('fs')
@@ -16,9 +16,19 @@ router.all('*', function (req, res, next) {
             next(err)
             return;
         }
-        console.log("files:",files);
-        const type = utils.onSuffix(files[0])
-        if (type === 'xml') {
+        const fileTypelist = files.map(item => onSuffix(item));
+        if (fileTypelist.find((item) => (item === 'config.json'))) {
+          const configFile = fs.readFileSync(`${url}.config.json`, {
+            encoding: 'utf8'
+          })
+          const { path } = jsonCheckFile(JSON.parse(configFile), req.totalParams, req.method)
+            if (path) {
+                res.requestFile = path
+                res.requestFileType = onSuffix(path)
+            }
+            return next()
+        }
+        if (fileTypelist.find((item) => (item === 'xml'))) {
             const data = fs.readFileSync(`${url}.xml`, {
                 encoding: 'utf8'
             })
@@ -27,32 +37,29 @@ router.all('*', function (req, res, next) {
                     next(err)
                     return;
                 }
-                const { value } = utils.onFormat(result, req.totalParams, req.method)
+                const query = onFilterByMethod(result.param.query, req.method)
+                const { value } = onCalculateSortByParams(query, req.totalParams)
                 if (value) {
                     res.requestFile = value
-                    res.requestFileType = utils.onSuffix(value)
+                    res.requestFileType = onSuffix(value)
                 }
                 next()
             });
-        } else if (type === 'json' || type === 'js') {
-            if(/.config.json$/.test(files[0])){//JSON配置入参
-              const configFile = fs.readFileSync(`${files[0]}`, {
-                encoding: 'utf8'
-              })
-              const { file } = utils.jsonCheckFile(JSON.parse(configFile), req.totalParams, req.method)
-                if (file) {
-                    res.requestFile = file
-                    res.requestFileType = utils.onSuffix(file)
-                }
-                console.log(value)
-                return next()
-            }
-            res.requestFile = files[0]
-            res.requestFileType = type
-            next()
-        } else {
-            next()
+            return;
         }
+        if (fileTypelist.find((item) => (item === 'js'))) {
+            res.requestFile = `${url}.js`
+            res.requestFileType = 'js'
+            next()
+            return;
+        }
+        if (fileTypelist.find((item) => (item === 'json'))) {
+            res.requestFile = `${url}.json`
+            res.requestFileType = 'json'
+            next()
+            return;
+        }
+        next()
     })
 })
 module.exports = router
