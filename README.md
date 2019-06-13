@@ -144,6 +144,32 @@ npm start // 开发
 5. 优先级:完全匹配 > *(星号) > 无
 6. 一般query里面为空会当做默认值输出
 
+### json/多参数支持：
+> 将配置文件名定义为xxx.config.json
+> 配置参照以下格式
+```
+{
+  "param": [
+    {
+      "query": {
+        "id": 1
+      },
+      "file":"data/api3/aa/bb1.json",
+      "method":"post"
+    },
+    {
+      "query": {
+        "id": 2
+      },
+      "file":"data/api3/aa/bb2.json",
+      "method":"post"
+    }
+  ]
+}
+```
+### json详解
+1. 所有的配置都包裹在param数组中
+2. 参数放到query中，层级越靠前匹配相似度越高
 
 ### todo
 
