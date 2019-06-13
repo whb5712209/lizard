@@ -1,3 +1,4 @@
+const jsoncheck = require("./jsoncheck");
 function onFormat(result, params = {}, method) {
   const query = result.param.query.filter(item => {
     if (!item.$.method) {
@@ -24,10 +25,36 @@ function onFormat(result, params = {}, method) {
 function onSuffix(str) {
   return str.substr(str.lastIndexOf('.') + 1, str.length)
 }
+function jsonCheckFile(configFile,requestParams,method){
+  console.log(1,(configFile.param))
+  const queryList = configFile.param.filter(item => {
+    if (!item.method) {
+      return true
+    }
+    if (item.method.toLocaleUpperCase() === method) {
+      return true
+    }
+    if (item.method === '*') {
+      return true
+    }
+    return false
+  });
+  let maxScoreIndex = 0;
+  const scoreList = queryList.sort((a,b)=>{
+    return jsoncheck(100,a.query,requestParams)>jsoncheck(100,b.query,requestParams)?-1:1
+  });
+  const path = scoreList[0].file
+  console.log('最优配置:', JSON.stringify(scoreList[0]));
+  return {
+    path
+  } 
+
+}
 module.exports = {
   onSuffix: onSuffix,
   onFormat: onFormat,
-  onSort: onSortByTotal
+  onSort: onSortByTotal,
+  jsonCheckFile:jsonCheckFile
 }
 
 function onFormatByJS(source, format = 'String') {

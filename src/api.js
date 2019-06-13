@@ -16,6 +16,7 @@ router.all('*', function (req, res, next) {
             next(err)
             return;
         }
+        console.log("files:",files);
         const type = utils.onSuffix(files[0])
         if (type === 'xml') {
             const data = fs.readFileSync(`${url}.xml`, {
@@ -34,6 +35,18 @@ router.all('*', function (req, res, next) {
                 next()
             });
         } else if (type === 'json' || type === 'js') {
+            if(/.config.json$/.test(files[0])){//JSON配置入参
+              const configFile = fs.readFileSync(`${files[0]}`, {
+                encoding: 'utf8'
+              })
+              const { file } = utils.jsonCheckFile(JSON.parse(configFile), req.totalParams, req.method)
+                if (file) {
+                    res.requestFile = file
+                    res.requestFileType = utils.onSuffix(file)
+                }
+                console.log(value)
+                return next()
+            }
             res.requestFile = files[0]
             res.requestFileType = type
             next()
